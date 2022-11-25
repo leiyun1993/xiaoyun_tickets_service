@@ -78,6 +78,13 @@ module.exports = class extends Base {
         let params = this.post();
         let model = this.model("user");
         let user = await model.where({ id: params.l_user_id }).find();
+        if (think.isEmpty(user)) {
+            return this.fail(1004, "用户不存在！", {});
+        }
+        let tModel = this.model("t_tickets");
+        user.active_count = await tModel.where({ user_id: user.id, is_del: 0 }).count();
+        let logModel = this.model("t_tickets_log");
+        user.log_count = await logModel.where({ user_id: user.id, is_del: 0 }).count();
         delete user.token;
         this.success(user, "success")
     }
