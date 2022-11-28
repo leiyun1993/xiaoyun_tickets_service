@@ -180,4 +180,39 @@ module.exports = class extends Base {
         this.success(log);
     }
 
+    /**
+     * 添加banner信息
+     */
+    async addBannerAction () {
+        let params = this.post();
+        let type = params.type || 0;
+        let path = params.path;
+        let content = params.content;
+        if (type == 1 && !path) {
+            return this.fail(1000, "请输入跳转路径！");
+        }
+        if (type == 2 && !content) {
+            return this.fail(1000, "请输入说明！");
+        }
+        let model = this.model("t_banner");
+        let banner = {
+            type: type,
+            content: content,
+            img: params.img,
+            path: path,
+        }
+        if (params.id) {
+            let bannerObj = await model.where({ id: params.id, is_del: 0 }).find();
+            if (think.isEmpty(bannerObj)) {
+                return this.fail(1000, "编辑的数据不存在！");
+            }
+            await model.where({ id: params.id }).update(banner);
+        } else {
+            banner.add_time = dayjs().unix();
+            let insertId = await model.add(banner);
+            return this.success({ id: insertId }, "success");
+        }
+        return this.success({}, "success");
+    }
+
 };
