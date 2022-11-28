@@ -26,7 +26,7 @@ module.exports = class extends Base {
     async bannerDetailAction () {
         let params = this.post();
         let model = this.model("t_banner");
-        let banner = await model.where({ is_del: 0, id: params.id }).select();
+        let banner = await model.where({ is_del: 0, id: params.id }).find();
         return this.success(banner, "success");
     }
 
