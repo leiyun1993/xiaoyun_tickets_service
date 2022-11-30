@@ -44,6 +44,12 @@ module.exports = class extends Base {
             obj.lat = params.lat;
             obj.lng = params.lng;
         }
+        if (params.desc) {
+            obj.desc = params.desc;
+        }
+        if (params.instruction) {
+            obj.instruction = params.instruction;
+        }
         let model = this.model("t_tickets");
         let insertId = await model.add(obj);
         this.success({
@@ -66,7 +72,7 @@ module.exports = class extends Base {
         if (params.status) {
             where.status = params.status;
         }
-        let res = await model.where(where).page(pageNo, pageSize).countSelect();
+        let res = await model.where(where).page(pageNo, pageSize).order("id DESC").countSelect();
         this.success(this.handlePage(res))
     }
 
@@ -213,5 +219,5 @@ module.exports = class extends Base {
         this.success(this.handlePage(logList))
     }
 
-    
+
 };
