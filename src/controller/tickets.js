@@ -219,5 +219,74 @@ module.exports = class extends Base {
         this.success(this.handlePage(logList))
     }
 
+    /**
+     * 调整库存
+     */
+    async setStockAction () {
+        let params = this.post();
+        let l_user_id = params.l_user_id;
+        let id = params.id;
+        let total = params.total;
+        let model = this.model("t_tickets");
+        let detail = await model.where({ id: id, is_del: 0 }).find();
+        if (think.isEmpty(detail)) {
+            return this.fail(1000, "活动不存在！", {});
+        }
+        if (detail.status != 1) {
+            return this.fail(1000, "活动已结束！", {});
+        }
+        if (detail.user_id != l_user_id) {
+            return this.fail(1000, "无修改库存的权限！", {});
+        }
+        if (total < detail.received) {
+            return this.fail(1000, "库存数不能小于已领取数量！", {});
+        }
+        await model.update({
+            id: id,
+            total: total
+        })
+        this.success({}, "设置成功！");
+    }
+
+    /**
+     * 活动的核销记录
+     */
+    async receivedLogAction () {
+        let params = this.post();
+        let id = params.id;
+        let status = params.status;
+        let pageNo = params.page_no || 1;
+        let pageSize = params.page_size || 12;
+        let model = this.model("t_tickets");
+        let detail = await model.where({ id: id, is_del: 0 }).find();
+        if (think.isEmpty(detail)) {
+            return this.fail(1000, "活动不存在！", {});
+        }
+        let logModel = this.model("t_tickets_log");
+        let where = {
+            "a.is_del": 0,
+            "a.t_id": id
+        }
+        if (status) {
+            if (status == 1) {
+                where['a.status'] = ["IN", [1, 3]];
+            } else {
+                where['a.status'] = status;
+            }
+        }
+        let logList = await logModel.alias("a")
+            .join(
+                [
+                    "LEFT JOIN user as b ON b.id=a.user_id",
+                    "LEFT JOIN user as c ON c.id=a.off_uid",
+                ]
+            ).where(where)
+            .field("a.*,b.nick_name,b.avatar,c.nick_name as off_nick_name,c.avatar as off_avatar")
+            .page(pageNo, pageSize)
+            .order(status == 2 ? 'use_time DESC' : 'add_time DESC')
+            .countSelect()
+
+        this.success(this.handlePage(logList))
+    }
 
 };

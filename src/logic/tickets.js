@@ -92,4 +92,32 @@ module.exports = class extends Base {
         }
 
     }
+    setStockAction () {
+        let rules = {
+            id: { required: true },
+            total: { required: true },
+        }
+        let msgs = {
+            required: '{name} 不能为空',
+        }
+        let flag = this.validate(rules, msgs);
+        if (!flag) {
+            return this.fail(this.objStr(this.validateErrors), {})
+        }
+
+    }
+    receivedLogAction () {
+        let rules = {
+            id: { required: true },
+            status: { required: true },
+        }
+        let msgs = {
+            required: '{name} 不能为空',
+        }
+        let flag = this.validate(rules, msgs);
+        if (!flag) {
+            return this.fail(this.objStr(this.validateErrors), {})
+        }
+
+    }
 };
